@@ -28,14 +28,14 @@ const log = winston.createLogger({
   ],
 });
 
-// Ensure poll durations are at least 30s in dev/test
-const pollDuration = process.env.NODE_ENV === 'production' ? 24 * 60 * 60 * 1000 : 30 * 1000;
-
-const FIRST_POLL = {
-    question: "What path shall the brothers take first?",
-    options: ["Venture into the Whispering Woods", "Climb the Sun-Scorched Peaks"],
-    closes_at: new Date(Date.now() + 120000) // 2 minutes
-};
+// Poll duration:
+// - production default: 24h
+// - development default: 2 minutes (so you can vote and watch a full cycle)
+// You can override with POLL_DURATION_SECONDS.
+const pollDurationSeconds =
+  Number.parseInt(process.env.POLL_DURATION_SECONDS || "", 10) ||
+  (process.env.NODE_ENV === "production" ? 24 * 60 * 60 : 120);
+const pollDuration = pollDurationSeconds * 1000;
 
 // Get the currently open poll (SIMPLIFIED)
 router.get("/open", async (req, res) => {

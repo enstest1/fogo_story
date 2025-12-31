@@ -1,7 +1,7 @@
 {
-  "name": "bald_brothers",
+  "name": "lil-fogees",
   "version": "1.0.0",
-  "description": "Bald Brothers Story Engine",
+  "description": "Lil Fogees Story Engine",
   "main": "dist/server.js",
   "scripts": {
     "prebuild": "npm install",

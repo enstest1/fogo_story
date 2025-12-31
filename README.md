@@ -1,6 +1,6 @@
-# Bald Brothers Story Engine
+# Lil Fogees Story Engine
 
-A sophisticated story generation system that automatically creates daily chapters using AI agents, manages long-term narrative memory, and runs community polls to guide story direction.
+A story generation system that automatically creates chapters using AI agents, manages long-term narrative memory, and runs community polls to guide story direction.
 
 ## Features
 
@@ -26,37 +26,53 @@ A sophisticated story generation system that automatically creates daily chapter
 
 ```bash
 # Copy environment template
-cp .env.example .env
+cp env.example .env
 
 # Edit .env with your credentials
 nano .env
 ```
 
 Required environment variables:
-- `CLOUD_URL`: Bootoshi Cloud endpoint (https://api.baldbros.xyz)
-- `CLOUD_PASSWORD`: Your Bootoshi Cloud password
 - `SUPABASE_URL`: Your Supabase project URL
 - `SUPABASE_ANON_KEY`: Supabase anonymous public key
 - `OPENROUTER_API_KEY`: OpenRouter API key for AI model access
+- `API_TOKEN`: Bearer token used to protect `/api/*` endpoints
+- `API_URL`: Base URL for this service (used internally by `/polls/close-current`)
+
+Production recommended variables:
+- `POLL_DURATION_SECONDS`: set to `86400` (24 hours)
+- `POLL_CRON_SECONDS`: (dev only) frequency for in-process scheduler; ignored on Vercel
+- `ENABLE_IN_PROCESS_SCHEDULER`: set to `false` on Vercel (we auto-disable when `VERCEL=1`)
+
+Optional environment variables:
+- `PORT`: Server port (default: 3000)
+- `NODE_ENV`: `development` or `production`
+- `OPENPIPE_API_KEY`: Optional OpenPipe key (Feather telemetry)
+- `CLOUD_URL`: Optional Bootoshi Cloud endpoint (only required if `cloud()` is used)
+- `CLOUD_PASSWORD`: Optional Bootoshi Cloud password (only required if `cloud()` is used)
 
 ### 2. Database Setup (Supabase)
 
 Create these tables in your Supabase database:
 
 ```sql
+-- Needed for gen_random_uuid()
+create extension if not exists pgcrypto;
+
 -- Polls table
 CREATE TABLE polls (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   question text NOT NULL,
   options text[] NOT NULL DEFAULT ARRAY['yes','no'],
-  closes_at timestamptz NOT NULL
+  closes_at timestamptz NOT NULL,
+  processed_at timestamptz
 );
 
 -- Votes table  
 CREATE TABLE votes (
   poll_id uuid REFERENCES polls(id),
   client_id uuid NOT NULL,
-  choice int NOT NULL CHECK (choice IN (0, 1)),
+  choice int NOT NULL CHECK (choice >= 0),
   PRIMARY KEY (poll_id, client_id)
 );
 
@@ -111,6 +127,26 @@ npm run dev:all
 - `GET /` - API documentation
 
 ## Deployment
+
+### Vercel (recommended for this repo)
+
+This repo supports Vercel Serverless + Vercel Cron:
+- **Serverless handler**: `api/index.ts` (wraps the Express app)
+- **Daily cron endpoint**: `api/cron/daily.ts` (calls poll closure + chapter generation)
+- **Vercel config**: `vercel.json`
+
+Set these environment variables in Vercel:
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `OPENROUTER_API_KEY`
+- `API_TOKEN`
+- `POLL_DURATION_SECONDS=86400`
+
+Also set:
+- `API_URL` to your deployed base URL (e.g. `https://your-project.vercel.app`)
+
+Cron schedule:
+- Default is `0 9 * * *` (09:00 UTC) hitting `/api/cron/daily`
 
 ### GitHub Actions Setup
 

@@ -140,7 +140,7 @@ This stores your story's long-term memory.
 ### 5.1 Create Environment File
 ```bash
 # In your project folder, copy the example file:
-cp .env.example .env
+cp env.example .env
 ```
 
 ### 5.2 Edit Environment File

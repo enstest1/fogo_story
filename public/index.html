@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bald Brötherhööd</title>
+  <title>Lil Fogees</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap" rel="stylesheet">
   <style>
@@ -134,9 +134,9 @@
     </div>
     <!-- Commandment section -->
     <section class="commandment">
-      <h2>Bröther Commandment #1</h2>
-      <p><em>𝕿𝖍𝖔𝖚 𝖘𝖍𝖆𝖑𝖑 𝕽𝖊𝖘𝖕𝖊𝖈𝖙 𝖙𝖍𝖊 𝕭𝖆𝖑𝖉.</em><br><br>
-         The bare crown is sacred. Let no wig, cap, or illusion defile it. From the bald head springs all truth.
+      <h2>Lil Fogees</h2>
+      <p>
+        A community-driven folklore-mystery on the North Atlantic: vote on what happens next, then read the latest chapter.
       </p>
     </section>
     <!-- Poll section with voting animation -->
@@ -151,13 +151,13 @@
       <h2 id="story-heading">Loading The Saga...</h2>
       <div id="poll-results"></div>
       <div id="chapter-content">
-        <p>The chronicles of the Bald Brotherhood are being transcribed...</p>
+        <p>The fog rolls in. The chronicles are being transcribed...</p>
       </div>
     </section>
     <!-- Footer -->
     <footer>
-      © 2025 Bald Brötherhööd. Artwork &amp; lore licensed for community remix.<br/>
-      Built with 👨‍🦲 using Bootoshi&nbsp;Story Engine.
+      © 2025 Lil Fogees. Artwork &amp; lore licensed for community remix.<br/>
+      Built using the Story Engine.
     </footer>
   </div>
   <script>
@@ -168,11 +168,19 @@
 
     let isWaitingForNextState = false;
     let activePollIntervals = []; // NEW: To keep track of our timers
+    let autoRefreshTimer = null;
 
     // NEW: Function to clear all active timers
     function clearActivePollTimers() {
         activePollIntervals.forEach(clearInterval);
         activePollIntervals = [];
+    }
+
+    function stopAutoRefresh() {
+        if (autoRefreshTimer) {
+            clearInterval(autoRefreshTimer);
+            autoRefreshTimer = null;
+        }
     }
 
     // NEW: Function to format time for the countdown
@@ -258,7 +266,7 @@
         isWaitingForNextState = true;
         clearActivePollTimers(); // Stop timers immediately on vote
 
-        currentPollDiv.innerHTML = `<h2>Thank you for voting!</h2><p>The Bald Brothers' destiny is being forged... Please wait.</p>`;
+        currentPollDiv.innerHTML = `<h2>Thank you for voting!</h2><p>The next chapter is taking shape... Please wait.</p>`;
 
         fetch(`/polls/${pollId}/vote`, {
             method: 'POST',
@@ -343,9 +351,18 @@
     function initialize() {
         isWaitingForNextState = false;
         clearActivePollTimers();
+        stopAutoRefresh();
         pollResultsDiv.innerHTML = '';
         fetchLatestChapter();
         fetchOpenPoll();
+
+        // Auto-refresh so the page updates without manual reload.
+        // Keeps the view in sync after polls close and new chapters land.
+        autoRefreshTimer = setInterval(() => {
+            if (isWaitingForNextState) return;
+            fetchLatestChapter();
+            fetchOpenPoll();
+        }, 5000);
     }
 
     initialize();
