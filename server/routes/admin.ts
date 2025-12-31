@@ -1,14 +1,9 @@
 import express from "express";
-import { createClient } from "@supabase/supabase-js";
 import { FIRST_POLL, GENESIS_CHAPTER_BODY } from "../../src/lib/constants";
+import { getSupabase } from "../lib/supabase";
 const log = require("pino")();
 
 const router = express.Router();
-
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
-);
 
 function getPollDurationSeconds() {
   const defaultSeconds = process.env.NODE_ENV === "production" ? 24 * 60 * 60 : 120;
@@ -26,6 +21,7 @@ function getPollDurationSeconds() {
 router.post("/reset-story", async (req, res) => {
   try {
     log.info("[admin] resetting story state...");
+    const supabase = getSupabase();
     const requestedSeconds = Number.isFinite(req.body?.pollDurationSeconds)
       ? Number(req.body.pollDurationSeconds)
       : undefined;

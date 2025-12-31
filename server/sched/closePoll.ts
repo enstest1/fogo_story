@@ -1,12 +1,7 @@
 import cron from "node-cron";
-import { createClient } from "@supabase/supabase-js";
 import { ChapterAgent } from "../../src/agents/chapterAgent";
+import { getSupabase } from "../lib/supabase";
 const log = require("pino")();
-
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
-);
 
 let isProcessingPollClosure = false;
 
@@ -31,6 +26,7 @@ export async function closePollAndTally() {
   log.info("--- [Scheduler] Starting Cycle ---");
 
   try {
+    const supabase = getSupabase();
     const { data: pollToProcess, error } = await supabase
         .from('polls')
         .select('*')

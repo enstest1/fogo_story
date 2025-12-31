@@ -1,22 +1,18 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import "dotenv/config";
-import { createClient } from "@supabase/supabase-js";
 import { publicChaptersRouter, protectedChaptersRouter } from "./server/routes/chapters";
 import pollsRouter from "./server/routes/polls";
 import adminRouter from "./server/routes/admin";
 const log = require("pino")();
 
 import { GENESIS_CHAPTER_BODY, FIRST_POLL } from "./src/lib/constants";
+import { getSupabase } from "./server/lib/supabase";
 
 // --- Database Bootstrap Logic ---
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
-);
-
 export async function bootstrapDatabase() {
   log.info("[Bootstrap] Checking if database needs to be initialized...");
+  const supabase = getSupabase();
 
   const defaultPollDurationSeconds = process.env.NODE_ENV === "production" ? 24 * 60 * 60 : 120;
   const pollDurationSeconds =

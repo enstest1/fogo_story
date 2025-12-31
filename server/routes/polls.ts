@@ -1,17 +1,11 @@
 import express from "express";
-import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
 import { cloud } from "../../src/lib/cloudClient";
 import { ChapterAgent } from "../../src/agents/chapterAgent";
+import { getSupabase } from "../lib/supabase";
 import winston from 'winston';
 
 const router = express.Router();
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
-);
 
 // Winston logger configuration
 const log = winston.createLogger({
@@ -40,6 +34,7 @@ const pollDuration = pollDurationSeconds * 1000;
 // Get the currently open poll (SIMPLIFIED)
 router.get("/open", async (req, res) => {
   try {
+    const supabase = getSupabase();
     const { data: openPoll, error } = await supabase
       .from("polls")
       .select("*")
@@ -64,6 +59,7 @@ router.get("/open", async (req, res) => {
 // Vote on a poll
 router.post("/:id/vote", async (req, res) => {
   try {
+    const supabase = getSupabase();
     const { choice } = req.body;
     const pollId = req.params.id;
     let clientId = req.cookies?.client_id;
@@ -86,6 +82,7 @@ router.post("/:id/vote", async (req, res) => {
 // Create a new poll
 router.post("/create", async (req, res) => {
   try {
+    const supabase = getSupabase();
     const { question, closes_at } = req.body;
     
     log.info("Creating new poll: %s", question);
@@ -114,6 +111,7 @@ router.post("/create", async (req, res) => {
 // Close current poll and create next poll
 router.post("/close-current", async (req, res) => {
   try {
+    const supabase = getSupabase();
     // Get the most recent open poll
     const { data: polls, error: pollError } = await supabase
       .from("polls")
@@ -227,6 +225,7 @@ router.get("/:id/results", async (req, res) => {
    * @apiError (500) InternalServerError Failed to fetch poll results
    */
   try {
+    const supabase = getSupabase();
     const pollId = req.params.id;
     log.info("Fetching results for poll %s", pollId);
 
@@ -300,6 +299,7 @@ async function generateStoryOptions(chapterContent: string) {
 
 // Helper to robustly generate and save a chapter after poll closes
 async function robustGenerateAndSaveChapter(poll: any, winner: string, totalVotes: number) {
+  const supabase = getSupabase();
   let chapterBody = '';
   try {
     // Try to generate chapter using AI agent

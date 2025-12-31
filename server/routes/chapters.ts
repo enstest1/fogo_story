@@ -1,17 +1,11 @@
 import express from "express";
-import { createClient } from "@supabase/supabase-js";
 import { ChapterAgent } from "../../src/agents/chapterAgent";
+import { getSupabase } from "../lib/supabase";
 const log = require("pino")();
 
 // Create two separate routers
 const publicChaptersRouter = express.Router();
 const protectedChaptersRouter = express.Router();
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
-);
 
 // This is our hardcoded first chapter, which acts as the genesis block.
 const GENESIS_CHAPTER = {
@@ -23,6 +17,7 @@ const GENESIS_CHAPTER = {
 protectedChaptersRouter.post("/worlds/:id/arcs/:arcId/progress", async (req, res) => {
   try {
     log.info("Starting chapter generation for arc %s", req.params.arcId);
+    const supabase = getSupabase();
     
     // For simplicity in testing, we'll use a hardcoded response here too.
     const hardcodedBody = "A new chapter unfolds, born from a direct call to the progress endpoint.";
@@ -49,6 +44,7 @@ protectedChaptersRouter.post("/worlds/:id/arcs/:arcId/progress", async (req, res
 // This endpoint gets the latest chapter and should be public.
 publicChaptersRouter.get("/latest", async (req, res) => {
   try {
+    const supabase = getSupabase();
     const { data: chapters, error } = await supabase
       .from("beats")
       .select("id, body")

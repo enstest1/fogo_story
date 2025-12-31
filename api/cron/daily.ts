@@ -1,3 +1,5 @@
+// Ensure Vercel bundles this dependency. `feather-ai` references it by string in pino transport config.
+import "pino-pretty";
 import { bootstrapDatabase } from "../../app";
 import { closePollAndTally } from "../../server/sched/closePoll";
 const log = require("pino")();
