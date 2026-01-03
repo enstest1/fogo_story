@@ -7,9 +7,9 @@
       "includeFiles": "public/**"
     }
   },
-  "routes": [
-    { "src": "/api/cron/daily", "dest": "/api/cron/daily" },
-    { "src": "/(.*)", "dest": "/api/index" }
+  "rewrites": [
+    { "source": "/api/cron/daily", "destination": "/api/cron/daily" },
+    { "source": "/(.*)", "destination": "/api/index" }
   ],
   "crons": [
     {
