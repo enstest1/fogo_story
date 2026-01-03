@@ -40,7 +40,7 @@ Required environment variables:
 - `API_URL`: Base URL for this service (used internally by `/polls/close-current`)
 
 Production recommended variables:
-- `POLL_DURATION_SECONDS`: set to `86400` (24 hours)
+- `POLL_DURATION_SECONDS`: set to `259200` (72 hours)
 - `POLL_CRON_SECONDS`: (dev only) frequency for in-process scheduler; ignored on Vercel
 - `ENABLE_IN_PROCESS_SCHEDULER`: set to `false` on Vercel (we auto-disable when `VERCEL=1`)
 
@@ -140,13 +140,14 @@ Set these environment variables in Vercel:
 - `SUPABASE_ANON_KEY`
 - `OPENROUTER_API_KEY`
 - `API_TOKEN`
-- `POLL_DURATION_SECONDS=86400`
+- `POLL_DURATION_SECONDS=259200`
 
 Also set:
 - `API_URL` to your deployed base URL (e.g. `https://your-project.vercel.app`)
 
 Cron schedule:
-- Default is `0 9 * * *` (09:00 UTC) hitting `/api/cron/daily`
+- Default is `*/15 * * * *` (every 15 minutes) hitting `/api/cron/daily`
+  - This does **not** generate a chapter every 15 minutes — it only progresses when a poll has actually closed.
 
 ### GitHub Actions Setup
 
